@@ -78,6 +78,116 @@ export const voiceApi = {
   },
 };
 
+// TTS API (Enhanced voice features)
+export const ttsApi = {
+  // Get TTS audio directly as blob for immediate playback
+  getTTSAudio: async (text: string, voice: string = 'af_bella', speed: number = 1.0): Promise<Blob | null> => {
+    try {
+      const response = await api.get(`/api/voice/tts/${encodeURIComponent(text)}`, {
+        params: { voice, speed },
+        responseType: 'blob',
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error getting TTS audio:', error);
+      return null;
+    }
+  },
+
+  // Get TTS audio as base64 (JSON response)
+  getTTSBase64: async (text: string): Promise<{ audio_data: string; success: boolean }> => {
+    const response = await api.post('/api/voice/text-to-speech', { text });
+    return response.data;
+  },
+
+  // Get available voices
+  getAvailableVoices: async (): Promise<{
+    voices: string[];
+    default_voice: string;
+    source: string;
+    tts_available: boolean;
+  }> => {
+    const response = await api.get('/api/voice/voices');
+    return response.data;
+  },
+
+  // Check TTS service status
+  getTTSStatus: async (): Promise<{
+    available: boolean;
+    service: string;
+    base_url?: string;
+    default_voice?: string;
+    cache_enabled?: boolean;
+    error?: string;
+  }> => {
+    const response = await api.get('/api/voice/tts/status');
+    return response.data;
+  },
+
+  // Play TTS audio directly (convenience function)
+  playTTS: async (text: string, voice: string = 'af_bella', speed: number = 1.0): Promise<boolean> => {
+    try {
+      const audioBlob = await ttsApi.getTTSAudio(text, voice, speed);
+      if (audioBlob) {
+        const audio = new Audio(URL.createObjectURL(audioBlob));
+        await audio.play();
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Error playing TTS:', error);
+      return false;
+    }
+  },
+};
+
+// Audio utility functions
+export const audioUtils = {
+  // Create audio element from base64 data
+  createAudioFromBase64: (base64: string, mimeType: string = 'audio/mpeg'): HTMLAudioElement => {
+    const blob = base64ToBlob(base64, mimeType);
+    const url = URL.createObjectURL(blob);
+    const audio = new Audio(url);
+    
+    // Clean up URL when audio ends
+    audio.addEventListener('ended', () => {
+      URL.revokeObjectURL(url);
+    });
+    
+    return audio;
+  },
+
+  // Play audio from base64 data
+  playBase64Audio: async (base64: string, mimeType: string = 'audio/mpeg'): Promise<boolean> => {
+    try {
+      const audio = audioUtils.createAudioFromBase64(base64, mimeType);
+      await audio.play();
+      return true;
+    } catch (error) {
+      console.error('Error playing audio:', error);
+      return false;
+    }
+  },
+
+  // Create download link for audio
+  downloadAudio: (audioData: string | Blob, filename: string): void => {
+    let blob: Blob;
+    
+    if (typeof audioData === 'string') {
+      blob = base64ToBlob(audioData, 'audio/mpeg');
+    } else {
+      blob = audioData;
+    }
+    
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  },
+};
+
 // Utility functions
 export const blobToBase64 = (blob: Blob): Promise<string> => {
   return new Promise((resolve, reject) => {

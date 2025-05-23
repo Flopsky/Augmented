@@ -7,7 +7,7 @@ import { StatusIndicator } from './components/StatusIndicator';
 import { ResponseDisplay } from './components/ResponseDisplay';
 import { useAudioRecorder } from './hooks/useAudioRecorder';
 import { useWebSocket } from './hooks/useWebSocket';
-import { taskApi, voiceApi, blobToBase64 } from './utils/api';
+import { taskApi, voiceApi, ttsApi, blobToBase64 } from './utils/api';
 import { AppState, Task, TaskAction } from './types';
 
 const queryClient = new QueryClient({
@@ -22,6 +22,7 @@ const queryClient = new QueryClient({
 const AppContent: React.FC = () => {
   const [appState, setAppState] = useState<AppState>(AppState.IDLE);
   const [hasAudioPermission, setHasAudioPermission] = useState(false);
+  const [isTTSEnabled, setIsTTSEnabled] = useState(false);
   const [lastResponse, setLastResponse] = useState<TaskAction | null>(null);
   const [showResponse, setShowResponse] = useState(false);
   const [lastUpdate, setLastUpdate] = useState<string>('');
@@ -42,6 +43,14 @@ const AppContent: React.FC = () => {
     refetchInterval: 30000, // Refetch every 30 seconds
   });
 
+  // Check TTS status
+  const { data: ttsStatus } = useQuery({
+    queryKey: ['tts-status'],
+    queryFn: () => ttsApi.getTTSStatus(),
+    refetchInterval: 60000, // Check every minute
+    retry: 1,
+  });
+
   // Check audio permission on mount
   useEffect(() => {
     const checkAudioPermission = async () => {
@@ -56,6 +65,13 @@ const AppContent: React.FC = () => {
 
     checkAudioPermission();
   }, []);
+
+  // Update TTS status
+  useEffect(() => {
+    if (ttsStatus) {
+      setIsTTSEnabled(ttsStatus.available);
+    }
+  }, [ttsStatus]);
 
   // Update tasks when WebSocket receives updates
   useEffect(() => {
@@ -83,6 +99,17 @@ const AppContent: React.FC = () => {
           
           setLastResponse(response.action);
           setShowResponse(true);
+          
+          // Play TTS response if available
+          if (isTTSEnabled && response.action.response_message) {
+            setAppState(AppState.SPEAKING);
+            try {
+              await ttsApi.playTTS(response.action.response_message);
+            } catch (error) {
+              console.error('Error playing TTS response:', error);
+            }
+          }
+          
           setAppState(AppState.IDLE);
           
           // Refetch tasks to get updated list
@@ -106,7 +133,7 @@ const AppContent: React.FC = () => {
         setTimeout(() => setAppState(AppState.IDLE), 2000);
       }
     }
-  }, [appState, hasAudioPermission, startRecording, stopRecording, clearRecording, refetchTasks]);
+  }, [appState, hasAudioPermission, isTTSEnabled, startRecording, stopRecording, clearRecording, refetchTasks]);
 
   const handleCompleteTask = useCallback(async (id: number) => {
     try {
@@ -146,7 +173,7 @@ const AppContent: React.FC = () => {
       <StatusIndicator
         isConnected={isConnected}
         hasAudioPermission={hasAudioPermission}
-        isTTSEnabled={false} // TTS is not implemented yet
+        isTTSEnabled={isTTSEnabled}
         lastUpdate={lastUpdate}
       />
 

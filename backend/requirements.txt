@@ -16,3 +16,5 @@ redis==5.0.1
 webrtcvad==2.0.10
 fuzzywuzzy==0.18.0
 python-levenshtein==0.27.1
+requests==2.31.0
+httpx==0.25.0
