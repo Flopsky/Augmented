@@ -1,0 +1,18 @@
+INFO:     Will watch for changes in these directories: ['/workspace/Augmented/backend']
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [1749] using WatchFiles
+/workspace/Augmented/backend/venv/lib/python3.12/site-packages/huggingface_hub/file_download.py:799: UserWarning: Not enough free disk space to download the file. The expected file size is: 0.46 MB. The target location /root/.cache/huggingface/hub/models--Systran--faster-whisper-base/blobs only has 0.00 MB free disk space.
+  warnings.warn(
+/workspace/Augmented/backend/venv/lib/python3.12/site-packages/huggingface_hub/file_download.py:799: UserWarning: Not enough free disk space to download the file. The expected file size is: 0.00 MB. The target location /root/.cache/huggingface/hub/models--Systran--faster-whisper-base/blobs only has 0.00 MB free disk space.
+  warnings.warn(
+/workspace/Augmented/backend/venv/lib/python3.12/site-packages/huggingface_hub/file_download.py:799: UserWarning: Not enough free disk space to download the file. The expected file size is: 2.20 MB. The target location /root/.cache/huggingface/hub/models--Systran--faster-whisper-base/blobs only has 0.00 MB free disk space.
+  warnings.warn(
+/workspace/Augmented/backend/venv/lib/python3.12/site-packages/huggingface_hub/file_download.py:799: UserWarning: Not enough free disk space to download the file. The expected file size is: 145.22 MB. The target location /root/.cache/huggingface/hub/models--Systran--faster-whisper-base/blobs only has 0.00 MB free disk space.
+  warnings.warn(
+INFO:     Started server process [1751]
+INFO:     Waiting for application startup.
+2025-05-23 12:37:23,567 - app.main - INFO - Starting Task Reminder API...
+2025-05-23 12:37:23,594 - app.main - INFO - Database tables created
+2025-05-23 12:37:23,594 - app.main - INFO - Task Reminder API started successfully
+INFO:     Application startup complete.
+INFO:     127.0.0.1:36176 - "GET /docs HTTP/1.1" 200 OK
