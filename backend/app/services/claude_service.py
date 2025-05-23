@@ -11,15 +11,29 @@ logger = logging.getLogger(__name__)
 class ClaudeService:
     def __init__(self):
         api_key = os.getenv("ANTHROPIC_API_KEY")
-        if not api_key:
-            raise ValueError("ANTHROPIC_API_KEY environment variable is required")
+        self.api_available = False
         
-        self.client = instructor.from_anthropic(Anthropic(api_key=api_key))
+        if not api_key or api_key == "sk-ant-placeholder-key-for-development":
+            logger.warning("ANTHROPIC_API_KEY not set or using placeholder. Claude features will use fallback mode.")
+            self.client = None
+        else:
+            try:
+                self.client = instructor.from_anthropic(Anthropic(api_key=api_key))
+                self.api_available = True
+                logger.info("Claude API initialized successfully")
+            except Exception as e:
+                logger.error(f"Failed to initialize Claude API: {e}")
+                self.client = None
     
     async def process_user_command(self, user_input: str, current_tasks: List[Dict]) -> TaskAction:
         """
         Send user input to Claude Sonnet with context about current tasks
         """
+        # Use fallback if Claude API is not available
+        if not self.api_available or not self.client:
+            logger.info("Using fallback keyword matching (Claude API not available)")
+            return self._fallback_keyword_matching(user_input, current_tasks)
+        
         try:
             system_prompt = f"""
             You are a task management assistant. Interpret the user's command and return structured data.
@@ -62,13 +76,9 @@ class ClaudeService:
             
         except Exception as e:
             logger.error(f"Error processing command with Claude: {e}")
-            # Fallback response
-            return TaskAction(
-                action=ActionType.UNCLEAR,
-                confidence=0.0,
-                response_message="I'm sorry, I couldn't understand that. Could you please try again?",
-                clarification_needed="Please rephrase your request more clearly."
-            )
+            # Fallback to keyword matching
+            logger.info("Falling back to keyword matching")
+            return self._fallback_keyword_matching(user_input, current_tasks)
     
     def _fallback_keyword_matching(self, user_input: str, current_tasks: List[Dict]) -> TaskAction:
         """

@@ -4,14 +4,15 @@ websockets==12.0
 sqlalchemy==2.0.23
 
 pydantic==2.5.0
-instructor==0.4.5
-anthropic==0.7.8
-faster-whisper==0.10.0
-pyaudio==0.2.11
-numpy==1.24.3
+instructor==1.2.3
+anthropic==0.25.0
+faster-whisper==1.0.1
+numpy>=1.24.0,<2.0.0
 python-multipart==0.0.6
 python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4
 aiofiles==23.2.1
 redis==5.0.1
 webrtcvad==2.0.10
+fuzzywuzzy==0.18.0
+python-levenshtein==0.27.1
