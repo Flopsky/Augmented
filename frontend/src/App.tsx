@@ -8,7 +8,7 @@ import { ResponseDisplay } from './components/ResponseDisplay';
 import { useAudioRecorder } from './hooks/useAudioRecorder';
 import { useWebSocket } from './hooks/useWebSocket';
 import { taskApi, voiceApi, ttsApi, blobToBase64 } from './utils/api';
-import { AppState, Task, TaskAction } from './types';
+import { AppState, TaskAction } from './types';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -30,7 +30,6 @@ const AppContent: React.FC = () => {
   const queryClient = useQueryClient();
   const { isConnected, tasks: wsTasks } = useWebSocket();
   const {
-    isRecording,
     startRecording,
     stopRecording,
     clearRecording,

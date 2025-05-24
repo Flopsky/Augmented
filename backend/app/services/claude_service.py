@@ -61,7 +61,7 @@ class ClaudeService:
             """
             
             response = self.client.chat.completions.create(
-                model="claude-3-sonnet-20240229",
+                model="claude-3-5-sonnet-20241022",
                 messages=[
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": user_input}
