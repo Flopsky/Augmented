@@ -145,6 +145,34 @@ async def text_to_speech(request: TTSRequest):
             detail="Failed to convert text to speech"
         )
 
+@router.get("/tts/status")
+@log_async_function_call
+async def get_tts_status():
+    """Check TTS service status and availability"""
+    try:
+        logger.debug("Checking TTS service status")
+        tts_service = await get_tts_service()
+        is_available = await tts_service.check_availability()
+        
+        status_info = {
+            "available": is_available,
+            "service": "kokoro-tts",
+            "base_url": tts_service.kokoro_base_url,
+            "default_voice": tts_service.get_default_voice(),
+            "cache_enabled": True
+        }
+        
+        logger.info(f"TTS status check - Available: {is_available}")
+        return status_info
+        
+    except Exception as e:
+        logger.error(f"Error checking TTS status: {e}")
+        return {
+            "available": False,
+            "service": "kokoro-tts",
+            "error": str(e)
+        }
+
 @router.get("/tts/{text}")
 @log_async_function_call
 async def get_text_to_speech_audio(text: str, voice: str = "af_bella", speed: float = 1.0):
@@ -207,34 +235,6 @@ async def get_available_voices():
             "default_voice": "af_bella",
             "source": "fallback",
             "tts_available": False
-        }
-
-@router.get("/tts/status")
-@log_async_function_call
-async def get_tts_status():
-    """Check TTS service status and availability"""
-    try:
-        logger.debug("Checking TTS service status")
-        tts_service = await get_tts_service()
-        is_available = await tts_service.check_availability()
-        
-        status_info = {
-            "available": is_available,
-            "service": "kokoro-tts",
-            "base_url": tts_service.kokoro_base_url,
-            "default_voice": tts_service.get_default_voice(),
-            "cache_enabled": True
-        }
-        
-        logger.info(f"TTS status check - Available: {is_available}")
-        return status_info
-        
-    except Exception as e:
-        logger.error(f"Error checking TTS status: {e}")
-        return {
-            "available": False,
-            "service": "kokoro-tts",
-            "error": str(e)
         }
 
 @router.post("/process-text")

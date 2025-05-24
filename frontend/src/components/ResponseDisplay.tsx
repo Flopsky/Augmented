@@ -14,7 +14,7 @@ export const ResponseDisplay: React.FC<ResponseDisplayProps> = ({
   isVisible,
   onClose
 }) => {
-  const [autoCloseTimer, setAutoCloseTimer] = useState<NodeJS.Timeout | null>(null);
+  const [autoCloseTimer, setAutoCloseTimer] = useState<number | null>(null);
 
   useEffect(() => {
     if (isVisible && response) {

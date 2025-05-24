@@ -7,7 +7,7 @@ export const useWebSocket = () => {
   const [isConnected, setIsConnected] = useState(false);
   const [tasks, setTasks] = useState<Task[]>([]);
   const wsRef = useRef<WebSocket | null>(null);
-  const reconnectTimeoutRef = useRef<NodeJS.Timeout>();
+  const reconnectTimeoutRef = useRef<number>();
   const reconnectAttempts = useRef(0);
   const maxReconnectAttempts = 5;
 
