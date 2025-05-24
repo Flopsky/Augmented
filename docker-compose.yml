@@ -1,0 +1,85 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: task-reminder-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=sqlite:///./tasks.db
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - CORS_ORIGINS=http://localhost:3000,http://localhost:5173,http://localhost:80
+      - KOKORO_BASE_URL=http://kokoro-tts:8880
+      - TTS_DEFAULT_VOICE=af_bella
+      - LOG_LEVEL=INFO
+      - LOG_DIR=/app/logs
+      - LOG_CONSOLE=true
+      - LOG_FILE_ENABLED=true
+    volumes:
+      - ./backend:/app
+      - backend_data:/app/data
+      - backend_logs:/app/logs
+    restart: unless-stopped
+    depends_on:
+      - kokoro-tts
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: task-reminder-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    environment:
+      - VITE_API_URL=http://localhost:8000
+      - VITE_WS_URL=ws://localhost:8000/ws
+    restart: unless-stopped
+
+  kokoro-tts:
+    image: ghcr.io/remsky/kokoro-fastapi-cpu:v0.2.2
+    container_name: task-reminder-kokoro-tts
+    ports:
+      - "8880:8880"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8880/v1/audio/voices"]
+      interval: 60s
+      timeout: 30s
+      retries: 3
+      start_period: 120s
+    volumes:
+      - kokoro_models:/app/api/src/models
+      - kokoro_cache:/tmp/tts_cache
+    environment:
+      - LOG_LEVEL=INFO
+
+  # Optional: Redis for caching (uncomment if needed)
+  # redis:
+  #   image: redis:7-alpine
+  #   container_name: task-reminder-redis
+  #   ports:
+  #     - "6379:6379"
+  #   volumes:
+  #     - redis_data:/data
+  #   restart: unless-stopped
+
+volumes:
+  backend_data:
+  backend_logs:
+  kokoro_models:
+  kokoro_cache:
+  # redis_data:
+
+networks:
+  default:
+    name: task-reminder-network

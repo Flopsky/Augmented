@@ -1,0 +1,10 @@
+
+> task-reminder-frontend@1.0.0 dev
+> vite --host 0.0.0.0 --port 57546 --host 0.0.0.0 --port 52056
+
+
+  VITE v4.5.14  ready in 494 ms
+
+  ➜  Local:   http://localhost:52056/
+  ➜  Network: http://172.17.0.3:52056/
+  ➜  press h to show help
